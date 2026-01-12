@@ -10,6 +10,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'django-book-r45u.onrender.com',
+    'localhost',
+    '127.0.0.1'
     ]
 
 
