@@ -9,6 +9,17 @@ def movie_list(request):
         movies = Movie.objects.filter(name__icontains = search_query)
     else:
         movies= Movie.objects.all()
+    
+    genre = request.GET.get('genre')
+    if genre :
+        movies = movies.filter(genre__iexact=genre)
+
+    language = request.GET.get('language')
+    if genre :
+        movies = movies.filter(language__iexact=language)
+
+
+    
     return render(request,'movies/movie_list.html',{'movies':movies})
 
 

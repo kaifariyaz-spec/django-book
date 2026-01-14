@@ -7,6 +7,18 @@
     <div class="row justify-content-center mb-5">
         <div class="col-md-8">
             <form method="GET" action="{% url 'movie_list' %}" class="search-bar">
+                <div style="text-align:center;margin-bottom: 15px;">
+                    <select name="genre"><option value="">All Genres</option>
+                    <option value="Action">Action</option>
+                    <option value="Romance">Romance</option>
+                    <option value="Comedy">Comedy</option>
+                </select>
+                <select name="language"><option value="">All Languages</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="English">English</option>
+                
+                </select>
+                </div>
                 <div class="input-group">
                     <input
                     class="form-control form-control-lg"
