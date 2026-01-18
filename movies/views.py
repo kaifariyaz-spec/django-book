@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.core.mail import send_mail
 from django.conf import settings
+import os
+import resend 
 
 def movie_list(request):
     search_query = request.GET.get('search')
@@ -71,28 +73,25 @@ def book_Seats(request, theater_id):
             # SEND BOOKING CONFIRMATION EMAIL
         if booked_Seats:
             try:
-                send_mail(
-                subject= "Booking Confirmed🎫",
-                message= f"""
-                Hi {request.user.username},
+                resend.api_key=os.environ.get("RESEND_API_KEY")
+                resend.Emails.send({
+                    "from": "BookMySeat<onboarding@resend.dev>",
+                    "to": [request.user.email],
+                    "subject": "Booking Confirmed🎫",
+                    "html": f""" <h2>Booking Confirmed</h2>
+                    <p>Hi {request.user.username},</p>
+                    <p>Your booking is confirmed.</p>
+                    <p><strong>Movie:</strong>{theaters.movie.name}</p>
+                    <p><strong>Theater:</strong>{theaters.name}</p>
+                    <p><strong>Seats:</strong> {','.join(booked_Seats)}</p><br>
+                    <p>Enjoy your show!</p>
+                    <p>--BookMySeat Team</p>
+                    """
+                    
+                })
 
-                Your booking is confirmed!
-
-                Movie : {theaters.movie.name}
-                Theater : {theaters.name}
-                Seat : {seat.seat_number}
-
-                Enjoy the show!
-                BookMySeat Team
-                """,
-
-                from_email=settings.EMAIL_HOST_USER,
-
-                recipient_list=[request.user.email],
-                fail_silently=False,
-        )
             except Exception as e:
-                print("EMAIL ERROR:",e)    
+                print("Resend email error:",e)    
 
 
         return redirect("profile")  # or wherever your profile page is
