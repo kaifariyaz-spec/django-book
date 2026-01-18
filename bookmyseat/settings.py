@@ -9,7 +9,7 @@ SECRET_KEY = 'django-insecure-test-key-change-this'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'django-book-2.onrender.com',
+    'django-book-3.onrender.com',
     'localhost',
     '127.0.0.1'
     ]
