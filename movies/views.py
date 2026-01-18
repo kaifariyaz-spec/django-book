@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect ,get_object_or_404
 from .models import Movie, Theater , Seat, Booking
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
+from django.core.mail import send_mail
+from django.conf import settings
 
 def movie_list(request):
     search_query = request.GET.get('search')
@@ -60,6 +62,33 @@ def book_Seats(request, theater_id):
 
             seat.is_booked = True
             seat.save()
+
+            # SEND BOOKING CONFIRMATION EMAIL
+            send_mail(
+                subject= "Booking Confirmed🎫",
+                message= f"""
+                Hi {request.user.username},
+
+                Your booking is confirmed!
+
+                Movie : {theaters.movie.name}
+                Theater : {theaters.name}
+                Seat : {seat.seat_number}
+
+                Enjoy the show!
+                BookMySeat Team
+                """,
+
+                from_email=settings.EMAIL_HOST_USER,
+
+                recipient_list=[request.user.email],
+                fail_silently=False,
+
+            
+          
+
+            )
+
 
         return redirect("profile")  # or wherever your profile page is
 

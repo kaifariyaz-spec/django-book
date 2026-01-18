@@ -9,7 +9,7 @@ SECRET_KEY = 'django-insecure-test-key-change-this'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'django-book-1-1fjx.onrender.com',
+    'django-book-2.onrender.com',
     'localhost',
     '127.0.0.1'
     ]
@@ -38,8 +38,14 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS =True
+
+EMAIL_HOST_USER = 'kaifariyaz@gmail.com'
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 
 STATIC_URL = 'static/'
 
@@ -75,13 +81,19 @@ WSGI_APPLICATION = 'bookmyseat.wsgi.application'
 
 
 # DATABASE
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DATABASE_URL =os.environ.get("DATABASE_URL")
+
+if DATABASE_URL:
+    DATABASES ={
+        "default":dj_database_url.parse(DATABASE_URL)
     }
-}
-DATABASES['default'] = dj_database_url.parse('postgresql://django_bookmyshow_qjz6_user:GwkcbUD6mmDW0C9gkanlSLF0ZNWBvrpS@dpg-d5idcgp5pdvs73bv5j00-a.oregon-postgres.render.com/django_bookmyshow_qjz6')
+else:
+    DATABASES = {
+        "default":{
+            "ENGINE":"django.db.backends.sqlite3",
+            "NAME" : BASE_DIR/"db.sqlite3",
+        }
+    }
 
 
 # PASSWORD VALIDATION
