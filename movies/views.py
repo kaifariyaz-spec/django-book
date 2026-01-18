@@ -69,31 +69,30 @@ def book_Seats(request, theater_id):
            pass
 
             # SEND BOOKING CONFIRMATION EMAIL
-        # if booked_Seats:
-        #     send_mail(
-        #         subject= "Booking Confirmed🎫",
-        #         message= f"""
-        #         Hi {request.user.username},
+        if booked_Seats:
+            try:
+                send_mail(
+                subject= "Booking Confirmed🎫",
+                message= f"""
+                Hi {request.user.username},
 
-        #         Your booking is confirmed!
+                Your booking is confirmed!
 
-        #         Movie : {theaters.movie.name}
-            #     Theater : {theaters.name}
-            #     Seat : {seat.seat_number}
+                Movie : {theaters.movie.name}
+                Theater : {theaters.name}
+                Seat : {seat.seat_number}
 
-            #     Enjoy the show!
-            #     BookMySeat Team
-            #     """,
+                Enjoy the show!
+                BookMySeat Team
+                """,
 
-            #     from_email=settings.EMAIL_HOST_USER,
+                from_email=settings.EMAIL_HOST_USER,
 
-            #     recipient_list=[request.user.email],
-            #     fail_silently=False,
-
-            
-          
-
-            # )
+                recipient_list=[request.user.email],
+                fail_silently=False,
+        )
+            except Exception as e:
+                print("EMAIL ERROR:",e)    
 
 
         return redirect("profile")  # or wherever your profile page is
