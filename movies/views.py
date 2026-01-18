@@ -46,24 +46,30 @@ def book_Seats(request, theater_id):
                 "seats": seats,
                 "error": "Please select at least one seat"
             })
+        
+        booked_Seats=[]
 
         for seat_id in selected_seats:
             seat = get_object_or_404(Seat, id=seat_id, theater=theaters)
 
-            if seat.is_booked:
-                continue
+        try:
+            booking, created=Booking.objects.get_or_create(seat=seat,
+            defaults={
+                "user":request.user,
+                "movie":theaters.movie,
+                "theater":theaters
+            }
+         )
+            if created: 
+                seat.is_booked=True
+                seat.save()
+                booked_Seats.append(seat.seat_number)
 
-            Booking.objects.create(
-                user=request.user,
-                seat=seat,
-                movie=theaters.movie,
-                theater=theaters
-            )
-
-            seat.is_booked = True
-            seat.save()
+        except IntegrityError:
+           pass
 
             # SEND BOOKING CONFIRMATION EMAIL
+        if booked_Seats:
             send_mail(
                 subject= "Booking Confirmed🎫",
                 message= f"""
