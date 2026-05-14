@@ -1,0 +1,60 @@
+{% extends "users/basic.html" %}
+
+{% block content %}
+
+<div class="container mt-5 text-center">
+
+    <h2 class="mb-4">💳 Payment</h2>
+
+    <div class="card p-4 shadow-sm">
+        <h5>Complete your booking</h5>
+        <p>Click below to pay for your ticket</p>
+
+        <button id="pay-btn" class="btn btn-success btn-lg mt-3">
+            Pay Now
+        </button>
+    </div>
+
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+
+<script>
+var options = {
+    "key": "{{ key_id }}",
+    "amount": Number("{{ amount }}"),
+    "currency": "INR",
+    "name": "BookMySeat",
+    "description": "Movie Ticket Booking",
+    "order_id":"{{ order_id }}",
+    // "callback_url":"/payment-success/",
+
+    "handler": function (response){
+        alert("Payment Successful");
+        window.location.href = "/payment-success/";
+    
+    },
+    "prefill":{
+        "name":"{{ request.user.username }}",
+        "email":"{{ request.user.email }}"
+    },
+
+    "theme": {
+        "color": "#3399cc"
+    }
+};
+console.log(options);
+
+var rzp = new Razorpay(options);
+
+document.addEventListener("DOMContentLoaded",function(){
+    document.getElementById("pay-btn").onclick = function(e){
+        e.preventDefault();
+        rzp.open();
+    };
+});
+
+</script>
+
+{% endblock %}

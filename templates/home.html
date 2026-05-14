@@ -114,7 +114,7 @@
       <div class="card-body">
         <h5><a href="{% url 'theater_list' movie.id %}" class="movie-link">{{ movie.name }}</a></h5>
         <p class="text-muted small movie-desc">{{ movie.description }}</p>
-        <span class="badge bg-danger">⭐ 4.5</span>
+        <span class="badge bg-danger">⭐ {{ movie.rating }}</span>
       </div>
     </div> 
     </div>
