@@ -1,4 +1,23 @@
-<h2>Payment Successfull🎉 </h2>
-<p>Your seat is booked successfully.</p>
+{% extends 'users/basic.html' %}
 
+{% block content %}
+
+<div class="success-container">
+<h1>Payment Successfull🎉 </h1>
+<h3>Your seat is booked successfully.</h3>
 <a href="/">Go Home</a>
+</div>
+
+<style>
+      .success-container{
+        height: 80vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+
+      }
+</style>
+
+{% endblock %}

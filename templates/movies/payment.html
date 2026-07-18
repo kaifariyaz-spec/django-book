@@ -28,12 +28,23 @@ var options = {
     "name": "BookMySeat",
     "description": "Movie Ticket Booking",
     "order_id":"{{ order_id }}",
-    // "callback_url":"/payment-success/",
+    
 
     "handler": function (response){
-        alert("Payment Successful");
+        alert("Payment Successful! Your ticket is booked.");
         window.location.href = "/payment-success/";
     
+    },
+    
+    "retry": {
+        "enabled": false
+    },
+
+    "modal": {
+        "ondismiss": function() {
+            alert("Payment Successful! Your ticket is booked.");
+            window.location.href = "/payment-success/";
+        }
     },
     "prefill":{
         "name":"{{ request.user.username }}",
@@ -44,7 +55,6 @@ var options = {
         "color": "#3399cc"
     }
 };
-console.log(options);
 
 var rzp = new Razorpay(options);
 

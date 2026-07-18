@@ -9,6 +9,7 @@ urlpatterns =[
     path('<int:movie_id>/theaters/',views.theater_list,name ='theater_list'),
     path('theater/<int:theater_id>/seats/book/',views.book_Seats,name ='book_Seats'),
     path('payment-success/',views.payment_success,name='payment_success'),
+    path("payment_failed/",views.payment_failed,name="payment_failed"),
     path('payment/',views.payment_page,name='payment_page'),
 
 ]

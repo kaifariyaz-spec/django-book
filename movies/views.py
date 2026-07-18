@@ -7,9 +7,6 @@ from django.conf import settings
 import os
 import resend
 import razorpay 
-from django.utils import timezone
-from datetime import timedelta
-from django.http import HttpResponse
 
 def movie_list(request):
     search_query = request.GET.get('search')
@@ -43,64 +40,75 @@ def theater_list(request,movie_id):
     return render(request,'movies/theater_list.html',{'movie':movies,'theaters':theater})
 
 @login_required(login_url='/login/')
-
 def book_Seats(request, theater_id):
-    # expired_bookings = Booking.objects.filter(is_paid=False)
-
-    # for booking in expired_bookings:
-    #     if booking.created_at + timedelta(minutes=5) < timezone.now():
-    #         booking.delete()
-
     theater = get_object_or_404(Theater, id=theater_id)
-    seats = Seat.objects.filter(theater_id=theater_id)
+    seats = Seat.objects.filter(theater=theater)
 
+    # Mark already paid seats as booked
     for seat in seats:
-        seat.is_booked = Booking.objects.filter(seat=seat,is_paid=True).exists()
-
-    if request.method == "GET":
-        return render(request,"movies/seat_selection.html",{
-            "theater": theater,
-            "seats": seats
-        })
+        seat.is_booked = Booking.objects.filter(
+            seat=seat,
+            is_paid=True
+        ).exists()
 
     if request.method == "POST":
-        selected_seats = request.POST.getlist('seats')
+        selected_seats = request.POST.getlist("seats")
+        
 
         if not selected_seats:
-            return render(request,"movies/seat_selection.html",{
-                "theater" : theater,
-                "seats" : seats,
-                "error" : "Please select at least one seat"
-
+            return render(request, "movies/seat_selection.html", {
+                "theater": theater,
+                "seats": seats,
+                "error": "Please select at least one seat."
             })
-        booked_seats = []
 
-        for seat_id in selected_seats:
-            seat = Seat.objects.get(id=seat_id)
-            
-            booking, created = Booking.objects.get_or_create(
-                seat=seat,
-                defaults= {
-                    "user" : request.user,
-                    "movie" : theater.movie,
-                    "theater" : theater,
-                    "is_paid" : False
-            }
-            )
-            
-            if created:
-                booked_seats.append(seat.seat_number)
+        try:
+            for seat_id in selected_seats:
+                seat = get_object_or_404(
+                    Seat,
+                    id=seat_id,
+                    theater=theater
+                )
+
+                # Check if seat is already booked
+                if Booking.objects.filter(
+                    seat=seat,
+                    is_paid=True
+                ).exists():
+                    return render(request, "movies/seat_selection.html", {
+                        "theater": theater,
+                        "seats": seats,
+                        "error": f"Seat {seat.seat_number} is already booked."
+                    })
+
                 
-            return redirect("payment_page")
+                Booking.objects.create(
+                    user=request.user,
+                    seat=seat,
+                    movie=theater.movie,
+                    theater=theater,
+                    is_paid=False
+                )
+            
 
-            return render(request,"movies/seat_selection.html",{
-                     "theater": theater,
-                     "seats": seats
-                })  
+            return redirect("/movies/payment/")
+
+        except Exception as e:
+            return render(request, "movies/seat_selection.html", {
+                "theater": theater,
+                "seats": seats,
+                "error": str(e)
+            })
+
+    return render(request, "movies/seat_selection.html", {
+        "theater": theater,
+        "seats": seats
+    })
+
+
+
                     
                     
-                
-
 def payment_page(request):
 
     client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
@@ -116,10 +124,14 @@ def payment_page(request):
                                                  "order_id": payment['id']})
 
 def payment_success(request):
-    bookings = Booking.objects.filter(user=request.user,is_paid=False)
+    bookings = list(
+        Booking.objects.filter(
+            user=request.user,
+            is_paid=False
+        )
+    )
 
-    if bookings.exists():
-        bookings.update(is_paid = True)
+    if bookings:
         seat_numbers = []
         theater = None
         movie = None
@@ -128,31 +140,40 @@ def payment_success(request):
             seat_numbers.append(booking.seat.seat_number)
             theater = booking.theater
             movie = booking.movie
-        
-            try:
-                    resend.api_key=os.environ.get("RESEND_API_KEY")
-                    resend.Emails.send({
-                        "from": "BookMySeat<onboarding@resend.dev>",
-                        "to": [request.user.email],
-                        "subject": "Booking Confirmed🎫",
-                        "html": f""" <h2>Booking Confirmed</h2>
-                        <p>Hi {request.user.username},</p>
-                        <p>Your payment was successful.</p>
-                        <p><strong>Movie:</strong>{movie.name}</p>
-                        <p><strong>Theater:</strong>{theater.name}</p>
-                        <p><strong>Seats:</strong> {','.join(seat_numbers)}</p><br>
-                        <p>Enjoy your show!</p>
-                        <p>--BookMySeat Team</p>
-                        """
-                        })
-            except Exception as e:
-                        print("Resend email error:", e)    
-                    
-        
 
-        return HttpResponse("Payment Success Working!!")
+        Booking.objects.filter(
+            id__in=[booking.id for booking in bookings]
+        ).update(is_paid=True)
 
+        try:
+            resend.api_key = os.environ.get("RESEND_API_KEY")
 
+            result = resend.Emails.send({
+                "from": "BookMySeat <onboarding@resend.dev>",
+                "to": [request.user.email],
+                "subject": "Booking Confirmed",
+                "html": f"""
+                    <h2>Booking Confirmed</h2>
+                    <p>Hi {request.user.username},</p>
+                    <p>Your ticket has been booked successfully.</p>
+                    <p><strong>Movie:</strong> {movie.name}</p>
+                    <p><strong>Theater:</strong> {theater.name}</p>
+                    <p><strong>Seats:</strong> {', '.join(seat_numbers)}</p>
+                    <p>Enjoy your show!</p>
+                    <p>-- BookMySeat Team</p>
+                """
+            })
 
+            print("EMAIL SENT:", result)
+
+        except Exception as e:
+            print("RESEND EMAIL ERROR:", e)
+
+        return render(request,"movies/success.html")
+    
+    return render(request,"movies/success.html")
+
+def payment_failed(request):
+     return render(request,"movies/payment_failed.html")
 
 

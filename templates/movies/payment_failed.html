@@ -1,0 +1,12 @@
+{% extends "users/basic.html" %}
+
+{% block content %}
+<div class="container mt-5
+text-center">
+
+<h2 class="text-danger">Payment Failed</h2>
+<p>Your payment was cancelled or failed.</p>
+<a href="{% url 'home' %}"
+class="btn btn-primary">Back to Home </a>
+</div>
+{% endblock %}

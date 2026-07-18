@@ -1,7 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.utils import timezone
-from datetime import timedelta
 
 class Movie(models.Model):
     name = models.CharField(max_length = 255)
@@ -37,15 +35,11 @@ class Seat(models.Model):
     
 class Booking(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
-    seat = models.OneToOneField(Seat,on_delete=models.CASCADE)
+    seat = models.ForeignKey(Seat,on_delete=models.CASCADE)
     movie = models.ForeignKey(Movie,on_delete=models.CASCADE)
     theater = models.ForeignKey(Theater,on_delete=models.CASCADE)
     booked_at = models.DateTimeField(auto_now_add=True)
     is_paid = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def is_expired(self):
-        return timezone.now() > self.created_at + timedelta(minutes=5)
 
     def __str__(self):
         return f"{self.user.username} - {self.movie.name} - Seat{self.seat.seat_number}"
