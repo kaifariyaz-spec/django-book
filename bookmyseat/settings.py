@@ -12,7 +12,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'django-book-3d9n-git-main-kaifas-projects-c1dd2787.vercel.app'
+    'django-book-3d9n-git-main-kaifas-projects-c1dd2787.vercel.app',
     'django-book-2.onrender.com',
     'localhost',
     '127.0.0.1'
